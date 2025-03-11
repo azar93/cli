@@ -8,7 +8,7 @@ interface PageProps {
   };
 }
 
-export default async function BlogPost({ params }: PageProps) {
+export default function BlogPost({ params }: PageProps) {
   const post = blogPosts.find(post => post.slug === params.slug);
 
   if (!post) {
@@ -51,7 +51,7 @@ export default async function BlogPost({ params }: PageProps) {
 }
 
 // Statik yolları generasiya etmək üçün
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return blogPosts.map((post) => ({
     slug: post.slug,
   }));
