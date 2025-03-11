@@ -1,97 +1,58 @@
 'use client';
 
-import { useState } from 'react';
-import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
+import { useState, useRef, useEffect } from 'react';
+import emailjs from '@emailjs/browser';
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  });
+  const formRef = useRef<HTMLFormElement>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const [status, setStatus] = useState<{
-    type: 'success' | 'error' | null;
-    message: string;
-  }>({ type: null, message: '' });
+  useEffect(() => {
+    // EmailJS-i inicializasiya edirik
+    emailjs.init("yU1dk5lp2sppBGemd");
+  }, []);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setStatus({ type: null, message: '' });
+    if (!formRef.current) return;
+
+    setStatus('loading');
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const result = await emailjs.sendForm(
+        'service_d8y523o',
+        'template_hb17x6b',
+        formRef.current,
+        'yU1dk5lp2sppBGemd'
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus({
-          type: 'success',
-          message: 'Mesajınız uğurla göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq.',
-        });
-        setFormData({
-          name: '',
-          email: '',
-          subject: '',
-          message: '',
-        });
-      } else {
-        throw new Error(data.message || 'Bir xəta baş verdi');
-      }
+      console.log('SUCCESS!', result.text);
+      setStatus('success');
+      formRef.current.reset();
     } catch (error) {
-      setStatus({
-        type: 'error',
-        message: error instanceof Error ? error.message : 'Xəta baş verdi',
-      });
-    } finally {
-      setIsSubmitting(false);
+      console.error('FAILED...', error);
+      setStatus('error');
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // Test məlumatlarını doldurmaq üçün
+  const fillTestData = () => {
+    if (formRef.current) {
+      const nameInput = formRef.current.querySelector<HTMLInputElement>('[name="user_name"]');
+      const emailInput = formRef.current.querySelector<HTMLInputElement>('[name="user_email"]');
+      const phoneInput = formRef.current.querySelector<HTMLInputElement>('[name="user_phone"]');
+      const messageInput = formRef.current.querySelector<HTMLTextAreaElement>('[name="message"]');
+
+      if (nameInput) nameInput.value = 'Test İstifadəçi';
+      if (emailInput) emailInput.value = 'test@example.com';
+      if (phoneInput) phoneInput.value = '+994501234567';
+      if (messageInput) messageInput.value = 'Bu bir test mesajıdır.';
+    }
   };
 
-  const contactInfo = [
-    {
-      icon: <FiPhone className="w-6 h-6" />,
-      title: 'Telefon',
-      details: [
-        '+994 50 123 45 67',
-        '+994 12 123 45 67'
-      ]
-    },
-    {
-      icon: <FiMail className="w-6 h-6" />,
-      title: 'Email',
-      details: [
-        'info@clickoptimize.az',
-        'support@clickoptimize.az'
-      ]
-    },
-    {
-      icon: <FiMapPin className="w-6 h-6" />,
-      title: 'Ünvan',
-      details: [
-        'Bakı şəhəri, Nərimanov rayonu,',
-        'Həsən Əliyev küçəsi 82A'
-      ]
-    }
-  ];
+  useEffect(() => {
+    fillTestData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
@@ -108,129 +69,121 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Contact Form Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Info */}
-            <div>
-              <h2 className="text-3xl font-bold mb-8">
-                Əlaqə <span className="gradient-text">Məlumatları</span>
-              </h2>
-              <div className="space-y-8">
-                {contactInfo.map((info, index) => (
-                  <div key={index} className="flex items-start">
-                    <div className="text-primary mr-4">
-                      {info.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{info.title}</h3>
-                      {info.details.map((detail, i) => (
-                        <p key={i} className="text-text-secondary">{detail}</p>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <div className="card">
-              {status.type && (
-                <div className={`mb-6 p-4 rounded-lg ${
-                  status.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                }`}>
-                  {status.message}
-                </div>
-              )}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-text-primary mb-2">
-                      Ad Soyad
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      placeholder="Ad və soyadınız"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      placeholder="Email ünvanınız"
-                      required
-                    />
-                  </div>
-                </div>
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-text-primary mb-2">
-                    Mövzu
+                  <label htmlFor="user_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Ad Soyad
                   </label>
                   <input
                     type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholder="Müraciət mövzusu"
+                    name="user_name"
+                    id="user_name"
                     required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
+
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-text-primary mb-2">
+                  <label htmlFor="user_email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="user_email"
+                    id="user_email"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="user_phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Telefon
+                  </label>
+                  <input
+                    type="tel"
+                    name="user_phone"
+                    id="user_phone"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
                     Mesaj
                   </label>
                   <textarea
-                    id="message"
                     name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={6}
-                    className="w-full px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholder="Mesajınız"
+                    id="message"
+                    rows={4}
                     required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   ></textarea>
                 </div>
-                <button 
-                  type="submit" 
-                  className="btn-primary w-full"
-                  disabled={isSubmitting}
+
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className={`w-full py-3 px-6 text-white font-medium rounded-lg transition-colors ${
+                    status === 'loading'
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                  }`}
                 >
-                  {isSubmitting ? 'Göndərilir...' : 'Göndər'}
+                  {status === 'loading' ? 'Göndərilir...' : 'Göndər'}
                 </button>
+
+                {status === 'success' && (
+                  <p className="text-green-600 text-center font-medium">
+                    Mesajınız uğurla göndərildi! Tezliklə sizinlə əlaqə saxlayacağıq.
+                  </p>
+                )}
+
+                {status === 'error' && (
+                  <p className="text-red-600 text-center font-medium">
+                    Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.
+                  </p>
+                )}
               </form>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Map Section */}
-      <section className="py-20 bg-gradient-background">
-        <div className="container mx-auto px-4">
-          <div className="card overflow-hidden">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3039.4479511873164!2d49.8674963!3d40.3952864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDIzJzQzLjAiTiA0OcKwNTInMDMuMCJF!5e0!3m2!1sen!2s!4v1635789876543!5m2!1sen!2s"
-              width="100%"
-              height="450"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-            ></iframe>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Telefon</h3>
+                <p className="text-gray-600">+994 50 123 45 67</p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Email</h3>
+                <p className="text-gray-600">dunyaminoghlu@outlook.com</p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Ünvan</h3>
+                <p className="text-gray-600">Bakı, Azərbaycan</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
