@@ -35,25 +35,6 @@ export default function ContactPage() {
     }
   };
 
-  // Test məlumatlarını doldurmaq üçün
-  const fillTestData = () => {
-    if (formRef.current) {
-      const nameInput = formRef.current.querySelector<HTMLInputElement>('[name="user_name"]');
-      const emailInput = formRef.current.querySelector<HTMLInputElement>('[name="user_email"]');
-      const phoneInput = formRef.current.querySelector<HTMLInputElement>('[name="user_phone"]');
-      const messageInput = formRef.current.querySelector<HTMLTextAreaElement>('[name="message"]');
-
-      if (nameInput) nameInput.value = 'Test İstifadəçi';
-      if (emailInput) emailInput.value = 'test@example.com';
-      if (phoneInput) phoneInput.value = '+994501234567';
-      if (messageInput) messageInput.value = 'Bu bir test mesajıdır.';
-    }
-  };
-
-  useEffect(() => {
-    fillTestData();
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <section className="relative py-20 bg-gradient-to-b from-purple-50 to-white">
