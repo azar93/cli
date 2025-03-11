@@ -4,7 +4,7 @@ const nextConfig = {
     domains: ['localhost'],
     unoptimized: true
   },
-  reactStrictMode: true
+  output: 'standalone'
 }
 
 module.exports = nextConfig 
