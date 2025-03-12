@@ -7,19 +7,19 @@ export default function HomePage() {
       title: 'SEO Optimallaşdırma',
       description: 'Google sıralamasında yüksəlin və daha çox müştəri qazanın',
       icon: '🎯',
-      link: '/services/seo'
+      link: '/services'
     },
     {
       title: 'Sosial Media Marketing',
       description: 'Sosial media platformalarında effektiv marketinq strategiyaları',
       icon: '📱',
-      link: '/services/social-media'
+      link: '/services'
     },
     {
       title: 'Kontent Marketinq',
       description: 'Keyfiyyətli və SEO dostu kontent yaradılması',
       icon: '✍️',
-      link: '/services/content-marketing'
+      link: '/services'
     }
   ];
 
@@ -43,6 +43,30 @@ export default function HomePage() {
       title: '24/7 Dəstək',
       description: 'Həftənin 7 günü texniki dəstək',
       icon: '🔧'
+    }
+  ];
+
+  const testimonials = [
+    {
+      id: 1,
+      name: "Əli Məmmədov",
+      role: "Biznes sahibi",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=ali",
+      text: "ClickOptimize ilə əməkdaşlıq bizim üçün çox faydalı oldu. SEO xidmətləri sayəsində saytımızın ziyarətçi sayı 3 dəfə artdı."
+    },
+    {
+      id: 2,
+      name: "Rəşad Əliyev",
+      role: "Marketing Menecer",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=resad",
+      text: "Professional komanda və yüksək keyfiyyətli xidmət. Nəticələr gözlədiyimizdən də yaxşı oldu."
+    },
+    {
+      id: 3,
+      name: "Ayşə Hüseynova",
+      role: "E-ticarət sahibi",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=ayse",
+      text: "Sosial media marketinq xidmətləri bizim online satışlarımızı əhəmiyyətli dərəcədə artırdı."
     }
   ];
 
